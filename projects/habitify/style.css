@@ -1,4 +1,25 @@
 @import "tailwindcss";
 
+@theme {
+  --font-montserrat: "Montserrat", sans-serif; /* headings */
+  --font-inter: "Inter", sans-serif; /* rest of content */
 
-/* import 'primeicons/primeicons.css'; */
+  --color-teal: #128c9e; /* Buttons, highlights, navigation  */
+  --color-stone: #e8ecf1; /* backgrounds, cards,  */
+  --color-black: #1a1a1a; /* text, icons,  */
+  --color-gold: #d4a043; /* icons */
+  --color-blue: #14248a;
+  --color-green: #0cf574;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-green);
+    background-color: var(--color-mint);
+  }
+}
