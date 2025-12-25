@@ -1,74 +1,26 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ref } from "vue";
-const habit = ref();
-const error = ref("");
 
-const habits = ref<string[]>(["habit"]);
-
-// add a habit to the habits array if input is > 10 chars
-// throw an error if not
-function addHabit() {
-  if (habit.value.length > 5) {
-    habits.value.push(habit.value);
-    error.value = "";
-    habit.value = "";
-  } else {
-    habit.value = habit.value;
-    error.value = "Your habit should not be less than 10 characters in length";
-  }
-}
-
-// remove a habit from an array
-function deleteHabit(id: number) {
-  habits.value.splice(id, 1);
-  return habits.value;
-}
-
-// make a habit
+const habits = ref<string[]>(["Test habit"]);
 </script>
 
 <template>
-  <div class="py-16 flex justify-center">
-    <div class="max-h-[500] w-1/3 bg-white">
-      <h1 class="">Welcome to Habitify</h1>
-      <div>
+  <div class="h-screen flex items-center justify-center">
+    <div class="bg-white p-2.5 w-1/3 rounded-lg shadow-md">
+      <h1 class="text-3xl text-center">Welcome to habitify</h1>
+      <div class="flex w-10/12 justify-center items-center mx-auto">
         <input
-          v-model="habit"
-          placeholder="Input a habit to keep track of it..."
+          placeholder="Add a habit"
+          class="focus:outline-none border-b border-b-blue-400 py-2 my-6 w-10/12 pl-1.5"
         />
-        <button @click="addHabit" class="cursor-pointer">
+        <button class="w-2/12 cursor-pointer">
           <i class="pi pi-plus"></i>
         </button>
       </div>
 
-      <table class="w-full border">
-        <th class="flex border-b">
-          <tr class="w-2/3">
-            Habit
-          </tr>
-          <tr class="border-l">
-            Actions
-          </tr>
-        </th>
-
-        <tbody>
-          <div v-for="(habit, index) in habits">
-            <div class="border-b flex">
-              <tr class="w-2/3 pl-6">
-                {{
-                  habit.charAt(0).toUpperCase() + habit.slice(1)
-                }}
-              </tr>
-              <tr class="border-l">
-                <button @click="deleteHabit(index)">
-                  <i class="pi pi-trash"></i>
-                </button>
-                <button><i class="pi pi-check"></i></button>
-              </tr>
-            </div>
-          </div>
-        </tbody>
-      </table>
+      
     </div>
   </div>
 </template>
+
+<style scoped></style>
