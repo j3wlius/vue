@@ -1,18 +1,21 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 
-const habits = ref<string[]>([]);
+interface Habit {
+  id: number;
+  count: number;
+  name: string;
+  target: number;
+}
 
-const modelValue = ref<string>("");
+const modelValue = ref("");
+
+const habits = ref<Habit[]>([{ id: 1, count: 2, name: modelValue, target: 3 }]);
+
+// const modelValue = ref<string>("");
 const error = ref("");
 
-function addHabit() {
-  if (modelValue.value.length >= 5) {
-    habits.value.push(modelValue.value);
-    modelValue.value = "";
-  } else {
-  }
-}
+function addHabit() {}
 </script>
 
 <template>
