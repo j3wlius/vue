@@ -114,11 +114,6 @@ async function handleRegister() {
     checkifPasswordNotEmpty(registerFormData.value.password) ||
     checkPasswordStrength(registerFormData.value.password);
 
-  console.log(
-    registerFormData.value.password,
-    registerFormData.value.confirm_password
-  );
-
   checkPasswordMatch(registerFormData.value.password);
 
   if (
@@ -129,7 +124,6 @@ async function handleRegister() {
   )
     return;
 
-  // console.log(registerFormData.value);
   try {
     const response = await mockRegistration(
       registerFormData.value.fullName,
