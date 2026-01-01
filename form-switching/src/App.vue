@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
-const formToggle = ref(false);
+const isSubmitted = ref(false);
 
 // login form data
 const loginFormData = ref({
@@ -23,14 +23,53 @@ const formError = ref({
   passwordError: "",
 });
 
+// persist selected tab using watch
+const savedTab = sessionStorage.getItem("authTab");
+const formToggle = ref(savedTab === "signup");
+watch(formToggle, (value) => {
+  sessionStorage.setItem("authTab", value ? "signup" : "login");
+});
+
 // form toggle function between login and sign up
 function toggleVisibleForm() {
   formToggle.value = !formToggle.value;
 }
 
+// mock login function
+function mockLogin(email: string, password: string) {
+  return new Promise<{ token: string }>((resolve, reject) => {
+    setTimeout(() => {
+      if (email == "test@email.com" && password == "password123") {
+        resolve({ token: "fake-jwt-token" });
+      } else {
+        reject(new Error("Invalid login credentials"));
+      }
+    }, 1500);
+  });
+}
+
 // login handler
-function handleLogin() {
+async function handleLogin() {
+  isSubmitted.value = true;
+
   formError.value.emailError = validateEmail(loginFormData.value.email);
+
+  formError.value.passwordError = validatePassword(
+    loginFormData.value.password
+  );
+
+  if (formError.value.emailError || formError.value.passwordError) return;
+
+  try {
+    const response = await mockLogin(
+      loginFormData.value.email,
+      loginFormData.value.password
+    );
+
+    console.log("Logged In", response.token);
+  } catch (e) {
+    console.log(e.message);
+  }
 }
 
 // registration handler
@@ -38,7 +77,7 @@ function handleRegister() {}
 
 // forms validation
 function validateEmail(email: string) {
-  if (!email) {
+  if (!email.trim()) {
     return "Email is required";
   }
 
@@ -50,7 +89,12 @@ function validateEmail(email: string) {
   return "";
 }
 
-function validatePassword(password: string) {}
+function validatePassword(password: string) {
+  if (!password.trim()) {
+    return "Password is required";
+  }
+  return "";
+}
 </script>
 
 <template>
@@ -83,6 +127,8 @@ function validatePassword(password: string) {}
             id="email-field"
             v-model="loginFormData.email"
             required
+            @input="isSubmitted && (formError.emailError = '')"
+            :class="{ error: isSubmitted && formError.emailError }"
           />
           <p class="error">{{ formError.emailError }}</p>
         </div>
@@ -95,6 +141,8 @@ function validatePassword(password: string) {}
             id="password-field"
             v-model="loginFormData.password"
             required
+            @input="isSubmitted && (formError.passwordError = '')"
+            :class="{ error: isSubmitted && formError.passwordError }"
           />
           <p class="error">{{ formError.passwordError }}</p>
         </div>
@@ -210,6 +258,10 @@ input {
   font-size: 0.9rem;
   transition: border-color 0.25s ease, box-shadow 0.25s ease,
     background-color 0.25s ease;
+}
+
+input.error {
+  box-shadow: 0 0 0 3px crimson;
 }
 
 input:focus {
