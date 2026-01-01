@@ -80,7 +80,27 @@ async function handleLogin() {
 }
 
 // mock registration
-function mockRegistration() {}
+function mockRegistration(
+  fullname: string,
+  email: string,
+  password: string,
+  confirm_password: string
+) {
+  return new Promise<{ message: string }>((resolve, reject) => {
+    setTimeout(() => {
+      if (
+        fullname === "New User" &&
+        email === "test@email.com" &&
+        password === "Password123!" &&
+        confirm_password === "Password123!"
+      ) {
+        resolve({ message: "User created successfully" });
+      } else {
+        reject(new Error("Something is wrong"));
+      }
+    }, 1500);
+  });
+}
 
 // registration handler
 async function handleRegister() {
@@ -94,6 +114,13 @@ async function handleRegister() {
     checkifPasswordNotEmpty(registerFormData.value.password) ||
     checkPasswordStrength(registerFormData.value.password);
 
+  console.log(
+    registerFormData.value.password,
+    registerFormData.value.confirm_password
+  );
+
+  checkPasswordMatch(registerFormData.value.password);
+
   if (
     registerFormErr.value.nameErr ||
     registerFormErr.value.emailErr ||
@@ -102,7 +129,19 @@ async function handleRegister() {
   )
     return;
 
-  console.log(registerFormData.value);
+  // console.log(registerFormData.value);
+  try {
+    const response = await mockRegistration(
+      registerFormData.value.fullName,
+      registerFormData.value.email,
+      registerFormData.value.password,
+      registerFormData.value.confirm_password
+    );
+
+    console.log(response.message);
+  } catch (e) {
+    console.log("Error", e);
+  }
 }
 
 // forms validation
@@ -168,7 +207,7 @@ function checkPasswordMatch(password: string) {
       "Passwords do not match");
   }
 
-  return;
+  return "";
 }
 </script>
 
@@ -271,6 +310,11 @@ function checkPasswordMatch(password: string) {
             name="password"
             id="password-field"
             :class="{ error: isSubmitted && registerFormErr.passwordErr }"
+            @input="
+              {
+                isSubmitted && (registerFormErr.passwordErr = '');
+              }
+            "
             v-model="registerFormData.password"
           />
           <p class="error">{{ registerFormErr.passwordErr }}</p>
@@ -289,21 +333,13 @@ function checkPasswordMatch(password: string) {
             }"
             @input="
               {
-                isSubmitted &&
-                  (registerFormErr.confirmPasswordErr = '') &&
-                  (registerFormErr.passwordErr = '');
+                isSubmitted && (registerFormErr.confirmPasswordErr = '');
               }
             "
+            v-model="registerFormData.confirm_password"
           />
-          <p
-            class="error"
-            v-if="
-              registerFormErr.confirmPasswordErr || registerFormErr.passwordErr
-            "
-          >
-            {{
-              registerFormErr.confirmPasswordErr || registerFormErr.passwordErr
-            }}
+          <p class="error" v-if="registerFormErr.confirmPasswordErr">
+            {{ registerFormErr.confirmPasswordErr }}
           </p>
         </div>
 
