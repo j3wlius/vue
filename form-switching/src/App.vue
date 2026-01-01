@@ -18,9 +18,16 @@ const registerFormData = ref({
 });
 
 // errors data
-const formError = ref({
+const loginFormErr = ref({
   emailError: "",
   passwordError: "",
+});
+
+const registerFormErr = ref({
+  nameErr: "",
+  passwordErr: "",
+  confirmPasswordErr: "",
+  emailErr: "",
 });
 
 // persist selected tab using watch
@@ -52,13 +59,13 @@ function mockLogin(email: string, password: string) {
 async function handleLogin() {
   isSubmitted.value = true;
 
-  formError.value.emailError = validateEmail(loginFormData.value.email);
+  loginFormErr.value.emailError = validateEmail(loginFormData.value.email);
 
-  formError.value.passwordError = validatePassword(
+  loginFormErr.value.passwordError = checkifPasswordNotEmpty(
     loginFormData.value.password
   );
 
-  if (formError.value.emailError || formError.value.passwordError) return;
+  if (loginFormErr.value.emailError || loginFormErr.value.passwordError) return;
 
   try {
     const response = await mockLogin(
@@ -67,15 +74,39 @@ async function handleLogin() {
     );
 
     console.log("Logged In", response.token);
-  } catch (e) {
+  } catch (e: any) {
     console.log(e.message);
   }
 }
 
+// mock registration
+function mockRegistration() {}
+
 // registration handler
-function handleRegister() {}
+async function handleRegister() {
+  isSubmitted.value = true;
+
+  nameValidation(registerFormData.value.fullName);
+
+  registerFormErr.value.emailErr = validateEmail(registerFormData.value.email);
+
+  registerFormErr.value.passwordErr =
+    checkifPasswordNotEmpty(registerFormData.value.password) ||
+    checkPasswordStrength(registerFormData.value.password);
+
+  if (
+    registerFormErr.value.nameErr ||
+    registerFormErr.value.emailErr ||
+    registerFormErr.value.passwordErr ||
+    registerFormErr.value.confirmPasswordErr
+  )
+    return;
+
+  console.log(registerFormData.value);
+}
 
 // forms validation
+// 1. login form validation
 function validateEmail(email: string) {
   if (!email.trim()) {
     return "Email is required";
@@ -89,11 +120,55 @@ function validateEmail(email: string) {
   return "";
 }
 
-function validatePassword(password: string) {
+function checkifPasswordNotEmpty(password: string) {
   if (!password.trim()) {
     return "Password is required";
   }
   return "";
+}
+
+// 2. register form validation
+function nameValidation(name: string) {
+  const trimmedName = name.trim();
+
+  if (!trimmedName) {
+    return (registerFormErr.value.nameErr = "Name is required");
+  }
+
+  if (trimmedName.length < 3) {
+    return (registerFormErr.value.nameErr =
+      "Name has to atleast 3 characters long");
+  }
+  return (registerFormErr.value.nameErr = "");
+}
+
+// password strength checker
+function checkPasswordStrength(password: string) {
+  if (password.length < 8)
+    return "Password too short. Should be atleast 8 characters";
+
+  if (!(/[a-z]/.test(password) || /[A-Z]/.test(password)))
+    return "Password should contain at least a lowercase or uppercase alphabet";
+
+  if (!/\d/.test(password)) return "Password should contain at least one 0-9";
+
+  if (!/[@$!%*?&]/.test(password))
+    return "Password should contain atleast 1 special character";
+
+  return "";
+}
+
+// check if passwords match
+function checkPasswordMatch(password: string) {
+  if (
+    !registerFormErr.value.passwordErr &&
+    !(password === registerFormData.value.confirm_password)
+  ) {
+    return (registerFormErr.value.confirmPasswordErr =
+      "Passwords do not match");
+  }
+
+  return;
 }
 </script>
 
@@ -127,10 +202,10 @@ function validatePassword(password: string) {
             id="email-field"
             v-model="loginFormData.email"
             required
-            @input="isSubmitted && (formError.emailError = '')"
-            :class="{ error: isSubmitted && formError.emailError }"
+            @input="isSubmitted && (loginFormErr.emailError = '')"
+            :class="{ error: isSubmitted && loginFormErr.emailError }"
           />
-          <p class="error">{{ formError.emailError }}</p>
+          <p class="error">{{ loginFormErr.emailError }}</p>
         </div>
 
         <div>
@@ -141,10 +216,10 @@ function validatePassword(password: string) {
             id="password-field"
             v-model="loginFormData.password"
             required
-            @input="isSubmitted && (formError.passwordError = '')"
-            :class="{ error: isSubmitted && formError.passwordError }"
+            @input="isSubmitted && (loginFormErr.passwordError = '')"
+            :class="{ error: isSubmitted && loginFormErr.passwordError }"
           />
-          <p class="error">{{ formError.passwordError }}</p>
+          <p class="error">{{ loginFormErr.passwordError }}</p>
         </div>
 
         <button type="submit">Login</button>
@@ -157,22 +232,79 @@ function validatePassword(password: string) {
       <form class="inputs" method="post" @submit.prevent="handleRegister">
         <div>
           <label for="fullname">Full Name:</label
-          ><input type="text" name="fullname" id="fullname" />
+          ><input
+            type="text"
+            name="fullname"
+            id="fullname"
+            :class="{ error: isSubmitted && registerFormErr.nameErr }"
+            v-model="registerFormData.fullName"
+            @input="
+              {
+                isSubmitted && (registerFormErr.nameErr = '');
+              }
+            "
+          />
+          <p class="error">{{ registerFormErr.nameErr }}</p>
         </div>
 
         <div>
           <label for="email-field">Email:</label
-          ><input type="text" name="email-field" id="email-field" />
+          ><input
+            type="text"
+            name="email-field"
+            id="email-field"
+            :class="{ error: isSubmitted && registerFormErr.emailErr }"
+            v-model="registerFormData.email"
+            @input="
+              {
+                isSubmitted && (registerFormErr.emailErr = '');
+              }
+            "
+          />
+          <p class="error">{{ registerFormErr.emailErr }}</p>
         </div>
 
         <div>
           <label for="password-field">Password:</label>
-          <input type="password" name="password" id="password-field" />
+          <input
+            type="password"
+            name="password"
+            id="password-field"
+            :class="{ error: isSubmitted && registerFormErr.passwordErr }"
+            v-model="registerFormData.password"
+          />
+          <p class="error">{{ registerFormErr.passwordErr }}</p>
         </div>
 
         <div>
           <label for="password-field">Confirm Password:</label>
-          <input type="password" name="password" id="password-field" />
+          <input
+            type="password"
+            name="password"
+            id="password-field"
+            :class="{
+              error:
+                (isSubmitted && registerFormErr.confirmPasswordErr) ||
+                registerFormErr.passwordErr,
+            }"
+            @input="
+              {
+                isSubmitted &&
+                  (registerFormErr.confirmPasswordErr = '') &&
+                  (registerFormErr.passwordErr = '');
+              }
+            "
+          />
+          <p
+            class="error"
+            v-if="
+              registerFormErr.confirmPasswordErr || registerFormErr.passwordErr
+            "
+          >
+            {{
+              registerFormErr.confirmPasswordErr || registerFormErr.passwordErr
+            }}
+          </p>
         </div>
 
         <button type="submit">Register</button>
